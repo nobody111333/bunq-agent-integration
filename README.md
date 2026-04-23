@@ -14,6 +14,11 @@
 
 **Constraint:** Only `requests` is allowed. Do NOT install `beautifulsoup4`, `lxml`, or use `html.parser`.
 
+## Also see — European Bank API Index
+
+- [个人开发者友好的银行 API](./banks/personal-friendly.md) — bunq / Monzo / Starling / Revolut
+- [不支持个人直接调用的银行 API](./banks/unsupported-personal.md) — ING / Deutsche Bank / BBVA / Santander / N26 / ABN AMRO / Nordea / Danske Bank / La Banque Postale / Rabobank / BNP Paribas / Société Générale
+
 ---
 
 ## Phase 1 — Mirror the Docs
