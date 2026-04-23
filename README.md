@@ -21,6 +21,10 @@
 
 ---
 
+# Part A — bunq (Detailed)
+
+bunq 已完整实践验证，以下是可复现的详细步骤。
+
 ## Phase 1 — Mirror the Docs
 
 ### Step 1: Discover pages
@@ -220,10 +224,139 @@ After the skill skeleton is complete, present the human with this exact checklis
 
 ---
 
+# Part B — Revolut (Research Notes)
+
+> ⚠️ **Status: researched, not personally verified.** Revolut does NOT offer a direct API key for standard personal accounts. The following is compiled from official docs and community reports.
+
+## API Landscape Overview
+
+Revolut operates **multiple distinct API products**, each with different target users and access requirements:
+
+| API Product | Target User | Personal Account? | Auth Method | Portal |
+|-------------|-------------|-------------------|-------------|--------|
+| **Business API** | Revolut Business customers | ❌ Requires Business account | OAuth 2.0 + client certificate | https://developer.revolut.com/docs/business |
+| **Merchant API** | E-commerce merchants | ❌ Requires Merchant account | API key (secret) | https://developer.revolut.com/docs/merchant |
+| **Open Banking API** | Licensed TPPs (AISP/PISP) | ❌ Requires PSD2 license | OAuth 2.0 + eIDAS certificate | https://developer.revolut.com/docs/open-banking |
+| **Crypto Ramp API** | Crypto service integrators | ❌ Requires partnership | API key | https://developer.revolut.com/docs/crypto-ramp |
+| **Revolut X** | Trading/exchange partners | ❌ Invite-only | OAuth 2.0 | https://developer.revolut.com/docs/revolut-x |
+
+**Key finding for personal users:** There is **no direct API key** for standard Revolut personal accounts. Unlike bunq, Revolut does not expose an "API Keys" section in the consumer mobile app.
+
+## Personal-Account Workarounds
+
+### Option 1: Upgrade to Revolut Business
+
+- Sign up at https://business.revolut.com/
+- Monthly fees apply (varies by plan)
+- Once approved, access the Developer Portal to generate API credentials
+- Full Business API access: accounts, payments, cards, team management, FX
+
+### Option 2: Open Banking Aggregator (Read-only)
+
+Personal users can access their Revolut data **indirectly** through regulated Open Banking aggregators:
+
+| Aggregator | Coverage | Cost | Notes |
+|------------|----------|------|-------|
+| **Plaid** | EU + UK | Freemium | Strong Revolut support, good docs |
+| **TrueLayer** | EU + UK | Freemium | UK-native, fast Revolut integration |
+| **Tink** | EU | Freemium | Swedish, strong in Nordics |
+| **GoCardless** | EU + UK | Freemium | Focused on payments/Variable Recurring Payments |
+| **Nordigen / GoCardless** | EU | Free tier | Account Information Service (read-only) |
+
+**How it works:**
+1. You register with the aggregator (not with Revolut)
+2. The aggregator is a licensed AISP, so it can access Revolut via PSD2
+3. You redirect the user through OAuth consent flow
+4. The aggregator returns normalized account/transaction data via its own API
+5. Your agent calls the aggregator API, not Revolut directly
+
+**Limitations:**
+- Read-only for most aggregators (AISP scope)
+- Payment initiation requires PISP license (higher bar)
+- Data freshness varies (typically batched, not real-time)
+- Additional dependency and cost layer
+
+### Option 3: CSV Export + Parse
+
+Revolut mobile app supports:
+- Monthly statement export (PDF/CSV)
+- Transaction search and filtering
+
+This is zero-API, but completely manual. The agent can parse exported CSVs if the human provides them.
+
+## Business API Deep Dive (if you have a Business account)
+
+### Authentication Flow
+
+1. **Register application** in Revolut Developer Portal
+2. **Generate client certificate** (sandbox and production are separate)
+3. **Upload certificate** to authorize your app
+4. **Obtain access token** via OAuth 2.0 with client assertion (JWT signed by your certificate)
+5. **Make API calls** with Bearer token
+
+### Core Endpoints
+
+| Resource | Endpoint Pattern | Capability |
+|----------|-----------------|------------|
+| Accounts | `GET /accounts` | List business accounts |
+| Counterparties | `GET /counterparties` | Manage payment recipients |
+| Payments | `POST /transfer` | Initiate transfers |
+| Payment Drafts | `POST /payment-drafts` | Create drafts for approval |
+| Transactions | `GET /transactions` | List transactions |
+| Cards | `GET /cards` | Manage team cards |
+| FX | `POST /exchange` | Currency exchange |
+| Team | `GET /team-members` | Manage business team |
+
+### Sandbox
+
+- Separate environment at `https://sandbox-b2b.revolut.com`
+- Simulate top-ups, transactions, payment flows
+- No real money involved
+
+## OpenAPI Specifications
+
+Revolut publishes machine-readable specs on GitHub:
+- **Repo:** https://github.com/revolut-engineering/revolut-openapi
+- **Formats:** JSON and YAML
+- **Files:** `business.yaml`, `open-banking.yaml`, `merchant-*.yaml`, `crypto-ramp-*.yaml`, `revolut-x.yml`
+
+These can be imported into Postman, Swagger, or used with OpenAPI Generator for SDK creation.
+
+## Comparison: bunq vs Revolut for Agent Integration
+
+| Aspect | bunq | Revolut |
+|--------|------|---------|
+| **Personal API key** | ✅ Available in app | ❌ Not available |
+| **Account needed for API** | Any account | Business account |
+| **Auth complexity** | API Key + RSA keypair | OAuth 2.0 + client cert |
+| **Read-only mode** | ❌ No (full access) | ❌ No (Business = full) |
+| **IP binding** | ✅ Required (device-server) | ❌ No |
+| **Sandbox** | ❌ No official sandbox | ✅ Yes (Business) |
+| **Open Banking** | ❌ No | ✅ Yes (via TPP) |
+| **Docs quality** | Good, has `llms.txt` | Good, has OpenAPI specs |
+| **Webhook support** | ❌ No | ✅ Yes |
+| **Multi-currency** | Limited | ✅ Native (30+) |
+| **Real-time sync** | Pull only | Webhook available |
+
+## Recommendation for Personal Users
+
+If you have a **standard Revolut personal account** and want agent integration:
+
+1. **Short term:** Use an Open Banking aggregator (Plaid/TrueLayer) for read-only access
+2. **Medium term:** Consider upgrading to Revolut Business if the monthly fee is justified by automation savings
+3. **Alternative:** Stick with bunq for direct API access, use Revolut for spending/card features only
+
+If you proceed with **Revolut Business**, the skill-building pattern is similar to bunq:
+1. Mirror the docs (Revolut has OpenAPI specs, not `llms.txt`)
+2. Build the skill skeleton with routing rules
+3. Guide the human through Business account setup → Developer Portal → certificate generation → OAuth flow
+
+---
+
 ## Done Criteria
 
-- [ ] `references/source-pages.csv` has ~200 rows
-- [ ] `references/pages/` has same count of `.md` files
+- [ ] `references/source-pages.csv` has ~200 rows (bunq)
+- [ ] `references/pages/` has same count of `.md` files (bunq)
 - [ ] `fetch_bunq_docs.py` works with only `requests` installed
 - [ ] `all-pages.md` was generated and groups by topic
 - [ ] Skill entrypoint file has correct routing rules + learned facts
