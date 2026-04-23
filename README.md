@@ -1,8 +1,16 @@
 # bunq Agent Integration — Reproduction Prompt
 
-**Goal:** Build a complete Hermes skill that mirrors bunq's developer documentation locally, then guide the human through binding their bunq account to the agent for live production use.
+[→ 中文说明](./README.zh.md)
 
-**Output directory:** `~/.hermes/skills/productivity/bunq-agent-integration/`
+**Goal:** Build a complete agent skill that mirrors bunq's developer documentation locally, then guide the human through binding their bunq account to the agent for live production use.
+
+**Compatible agents:** Hermes, OpenClaw, Codex (OpenAI), Claude Code, OpenCode, Kimi Code, or any agent framework that loads skills from a local directory.
+
+**Output directory:** `~/<agent-config-dir>/skills/productivity/bunq-agent-integration/`
+
+- For **Hermes** / **OpenClaw**: `~/.hermes/skills/productivity/bunq-agent-integration/`
+- For **Claude Code**: `.claude/skills/bunq-agent-integration/` (or project-local `CLAUDE.md`)
+- For **Codex / OpenCode / Kimi Code**: follow your agent's skill/plugin directory convention
 
 **Constraint:** Only `requests` is allowed. Do NOT install `beautifulsoup4`, `lxml`, or use `html.parser`.
 
@@ -72,15 +80,23 @@ Verify:
 
 ## Phase 2 — Build the Skill Skeleton
 
-### Step 5: Create SKILL.md
+### Step 5: Create the skill routing file
 
-Use this exact frontmatter:
+Different agents use different naming conventions for the entrypoint:
+
+| Agent | Entrypoint file | Frontmatter format |
+|-------|----------------|-------------------|
+| Hermes / OpenClaw | `SKILL.md` | YAML frontmatter |
+| Claude Code | `CLAUDE.md` | Markdown (no strict frontmatter) |
+| Codex / OpenCode / Kimi Code | `README.md` or agent-specific config | Tool description or system prompt |
+
+For Hermes / OpenClaw, use this frontmatter:
 ```yaml
 ---
 name: bunq-agent-integration
 description: Build and maintain bunq-to-agent integrations. Keeps a local indexed mirror of bunq developer docs, with on-demand fetch/update scripts and topic-organized reference files.
 version: 0.1.0
-author: Hermes Agent
+author: Agent
 license: MIT
 metadata:
   hermes:
@@ -89,11 +105,19 @@ metadata:
 ---
 ```
 
-Body must contain:
+For Claude Code, create `CLAUDE.md` with:
+- A clear description of what this skill does
+- When to use it (bunq integration, auth questions, payment flows)
+- File layout reference
+- Key facts listed below
+
+For Codex / OpenCode / Kimi Code, adapt the content into your agent's tool description or system prompt format. The critical part is exposing the **routing rules** and **verified facts** to the agent.
+
+Body must contain (regardless of agent):
 - **Trigger conditions** — when to load this skill
 - **What it contains** — list of files/scripts and their roles
-- **Operating rule** — SKILL.md is only routing; detailed content lives in `references/`
-- **Agent-first call pattern** — load order: SKILL.md → all-pages.md → topic note → raw snapshot
+- **Operating rule** — the entrypoint file is only routing; detailed content lives in `references/`
+- **Agent-first call pattern** — load order: entrypoint → all-pages.md → topic note → raw snapshot
 - **Fast path by task** — map common questions to specific reference files
 - **Key learned facts** (verified against production and docs):
   - bunq API Key grants **full access**; there is **no read-only mode**
@@ -129,7 +153,7 @@ After the skill skeleton is complete, present the human with this exact checklis
 
 ### Pre-flight checks
 
-1. **Confirm the agent's public IPv4**
+1. **Confirm the agent host's public IPv4**
    ```bash
    curl -s https://ipinfo.io/ip
    ```
@@ -168,7 +192,7 @@ After the skill skeleton is complete, present the human with this exact checklis
 
 7. **Call `POST /device-server`**
    - Pass the API key from step 3
-   - Pass the **agent's public IPv4** from step 1
+   - Pass the **agent host's public IPv4** from step 1
    - This binds the key to the VPS IP
 
 8. **Call `POST /session-server`**
@@ -187,7 +211,7 @@ After the skill skeleton is complete, present the human with this exact checklis
 - **Standard `POST /payment` can execute without app confirmation** for amounts under the session limit.
 - **Only `draft-payment` guarantees app confirmation.** If the human wants manual approval for every payment, they must use `draft-payment`.
 - **Keep `~/.bunq-prod/` out of git.** Add it to `.gitignore` if the home directory is versioned.
-- **If the VPS IP changes**, the device-server must be re-registered.
+- **If the host IP changes**, the device-server must be re-registered.
 
 ---
 
@@ -197,7 +221,7 @@ After the skill skeleton is complete, present the human with this exact checklis
 - [ ] `references/pages/` has same count of `.md` files
 - [ ] `fetch_bunq_docs.py` works with only `requests` installed
 - [ ] `all-pages.md` was generated and groups by topic
-- [ ] `SKILL.md` has correct frontmatter + routing rules + learned facts
+- [ ] Skill entrypoint file has correct routing rules + learned facts
 - [ ] Topic reference notes exist under `references/`
 - [ ] No production secrets anywhere in the skill directory
 - [ ] Human has completed the binding checklist or explicitly deferred it
