@@ -14,6 +14,8 @@
 
 **约束：** 只允许使用 `requests`。禁止安装 `beautifulsoup4`、`lxml`，禁止使用 `html.parser`。
 
+> 重要说明：官方文档与官方发布的 OpenAPI / 机器可读规范才是首要事实来源。本仓库中的提示词与说明仅作为 agent 的执行层与路由层，不应被视为权威来源。若提示词与官方文档冲突，以官方文档为准。
+
 ## 另见 — 欧洲银行 API 索引
 
 - [个人开发者友好的银行 API](./banks/personal-friendly.md) — bunq / Monzo / Starling / Revolut

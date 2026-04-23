@@ -14,6 +14,8 @@
 
 **Constraint:** Only `requests` is allowed. Do NOT install `beautifulsoup4`, `lxml`, or use `html.parser`.
 
+> Important: Official documentation and officially published OpenAPI / machine-readable specifications are the primary source of truth. This repository's prompts and notes are only an execution and routing layer for agents, not the authoritative source. When a prompt conflicts with official docs, follow the official docs.
+
 ## Also see — European Bank API Index
 
 - [个人开发者友好的银行 API](./banks/personal-friendly.md) — bunq / Monzo / Starling / Revolut
