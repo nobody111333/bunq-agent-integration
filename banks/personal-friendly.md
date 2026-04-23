@@ -1,6 +1,8 @@
 # 个人开发者友好的银行 API
 
-以下银行允许个人开发者（有账户即可）申请 API 凭据，直接调用自己的账户数据，无需注册 PSD2 TPP。
+以下列表分两类：
+- **可直接用个人账户接入**：bunq、Monzo、Starling
+- **个人可研究但标准个人账户不能直接拿 API key**：Revolut（需 Business 或聚合器）
 
 ---
 
@@ -11,7 +13,7 @@
 - **发现索引**: https://doc.bunq.com/llms.txt
 - **认证**: API Key + RSA 密钥对
 - **个人可用**: ✅ 完整可用
-- **特点**: 完全访问账户，无只读模式；标准 payment 可免 app 确认执行
+- **特点**: 完全访问账户，无只读模式；标准 payment 可免 app 确认执行；提供 sandbox API 与 sandbox user/key 流程
 - **实践状态**: 已验证生产集成，详见本仓库 README.md
 
 ---
@@ -54,8 +56,8 @@
 - **国家**: 🇬🇧 英国
 - **文档**: https://developer.revolut.com/
 - **Open Banking**: https://developer.revolut.com/docs/open-banking/open-banking-api
-- **认证**: 混合（API Key for Business/Personal API, OAuth for Open Banking）
-- **个人可用**: ✅ 有 Business API 和 Personal API
+- **认证**: Business API / Merchant API 用密钥或证书；Open Banking 用 OAuth + eIDAS
+- **个人可用**: ⚠️ 标准个人账户无直接 API key；Business 账户可直接接入
 - **特点**:
   - **Open Banking API**: 面向 TPP，PSD2 合规
   - **Business API**: 企业账户可用，支持多币种、批量付款、卡管理

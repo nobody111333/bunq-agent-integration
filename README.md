@@ -21,9 +21,9 @@
 
 ---
 
-# Part A — bunq (Detailed)
+# Part A — bunq (Detailed, verified against local skill)
 
-bunq 已完整实践验证，以下是可复现的详细步骤。
+bunq 已完整实践验证，以下步骤已根据本地原始 skill 与实践笔记复核。
 
 ## Phase 1 — Mirror the Docs
 
@@ -160,6 +160,8 @@ Each topic file < 100 lines. Do NOT duplicate raw page content; summarize naviga
 
 After the skill skeleton is complete, present the human with this exact checklist. Do NOT perform these steps yourself — the human must do them because they involve mobile app interaction and secret handling.
 
+Note: the bunq app step is just **creating the API key**. The actual production bootstrap is done by the agent/tooling via `installation` → `device-server` → `session-server`.
+
 ### Pre-flight checks
 
 1. **Confirm the agent host's public IPv4**
@@ -178,7 +180,6 @@ After the skill skeleton is complete, present the human with this exact checklis
 3. **Generate an API Key**
    - Open bunq app → Profile → Security → API keys
    - Tap "Create API Key"
-   - Select environment: **Production**
    - Copy the key immediately (it is shown only once)
    - Save it to `~/.bunq-prod/api_key` with `chmod 600`
 
@@ -331,7 +332,7 @@ These can be imported into Postman, Swagger, or used with OpenAPI Generator for 
 | **Auth complexity** | API Key + RSA keypair | OAuth 2.0 + client cert |
 | **Read-only mode** | ❌ No (full access) | ❌ No (Business = full) |
 | **IP binding** | ✅ Required (device-server) | ❌ No |
-| **Sandbox** | ❌ No official sandbox | ✅ Yes (Business) |
+| **Sandbox** | ✅ Yes (sandbox API + sandbox user/key flow) | ✅ Yes (Business) |
 | **Open Banking** | ❌ No | ✅ Yes (via TPP) |
 | **Docs quality** | Good, has `llms.txt` | Good, has OpenAPI specs |
 | **Webhook support** | ❌ No | ✅ Yes |
